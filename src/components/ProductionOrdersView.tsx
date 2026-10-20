@@ -92,9 +92,26 @@ export const ProductionOrdersView: React.FC<ProductionOrdersViewProps> = ({
     return matchesSearch && op.status === statusFilter;
   });
 
+  // Automatically trigger create modal when navigated with initialProductId or initialOrderId
+  React.useEffect(() => {
+    if (initialProductId || initialOrderId) {
+      setEditingOp(null);
+      setCode(`OP-2026-${String(productionOrders.length + 86).padStart(3, '0')}`);
+      if (initialProductId) setProductId(initialProductId);
+      if (initialOrderId) setOriginOrderId(initialOrderId);
+      setQuantity(10);
+      const defaultTarget = new Date();
+      defaultTarget.setDate(defaultTarget.getDate() + 10);
+      setTargetDeliveryDate(defaultTarget.toISOString().split('T')[0]);
+      setNotes('');
+      setFormError('');
+      setIsModalOpen(true);
+    }
+  }, [initialProductId, initialOrderId, productionOrders.length]);
+
   const handleOpenCreateModal = () => {
     setEditingOp(null);
-    setCode(`OP-2026-${String(productionOrders.length + 85).padStart(3, '0')}`);
+    setCode(`OP-2026-${String(productionOrders.length + 86).padStart(3, '0')}`);
     setProductId(initialProductId || products[0]?.id || '');
     setQuantity(10);
     setOriginOrderId(initialOrderId || '');
@@ -426,7 +443,7 @@ export const ProductionOrdersView: React.FC<ProductionOrdersViewProps> = ({
                           {bomRequirements.map(req => (
                             <tr key={req.materialId} className="hover:bg-slate-50">
                               <td className="py-2 px-3 font-mono font-medium text-slate-600">
-                                {req.materialId}
+                                {req.materialCode}
                               </td>
                               <td className="py-2 px-3 font-medium text-slate-800">
                                 {req.materialName}
@@ -736,7 +753,7 @@ export const ProductionOrdersView: React.FC<ProductionOrdersViewProps> = ({
                       rawMaterials
                     ).map(item => (
                       <tr key={item.materialId}>
-                        <td className="p-2 border font-mono">{item.materialId}</td>
+                        <td className="p-2 border font-mono">{item.materialCode}</td>
                         <td className="p-2 border font-medium">{item.materialName}</td>
                         <td className="p-2 border text-right font-mono">{item.quantityPerUnit} {item.unit}</td>
                         <td className="p-2 border text-right font-mono font-bold">{item.totalNeeded} {item.unit}</td>

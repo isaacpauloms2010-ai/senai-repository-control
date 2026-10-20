@@ -96,6 +96,7 @@ export function calculateBOMRequirements(
 
     return {
       materialId: item.materialId,
+      materialCode: raw ? raw.code : '—',
       materialName: raw ? raw.name : 'Material Desconhecido',
       unit: raw ? raw.unit : 'un',
       quantityPerUnit: item.quantityNeeded,
@@ -110,7 +111,8 @@ export function calculateBOMRequirements(
 export function formatProcessTime(totalMinutes: number): string {
   if (totalMinutes <= 0) return '0 min';
   const hours = Math.floor(totalMinutes / 60);
-  const mins = Math.round(totalMinutes % 60);
+  const rawMins = totalMinutes % 60;
+  const mins = rawMins % 1 === 0 ? rawMins : Number(rawMins.toFixed(1));
   if (hours === 0) return `${mins} min`;
   if (mins === 0) return `${hours}h`;
   return `${hours}h ${mins}min`;
@@ -137,13 +139,19 @@ export function calculateCapacityMetrics(
   capacity: ProductionCapacity,
   productionOrders: ProductionOrder[]
 ): CapacityMetricsResult {
-  // Cálculo da capacidade nominal bruta em horas
+  // Cálculo da capacidade nominal bruta em horas com validação contra 0 ou NaN
+  const workDays = Math.max(1, capacity.workDaysPerPeriod || 22);
+  const shifts = Math.max(1, capacity.shiftsPerDay || 1);
+  const hoursPerShift = Math.max(0.1, capacity.hoursPerShift || 8);
+  const workers = Math.max(1, capacity.numberOfWorkers || 1);
+  const efficiency = Math.max(1, Math.min(100, capacity.efficiencyRate || 85));
+
   const grossHours = capacity.customTotalHours && capacity.customTotalHours > 0
     ? capacity.customTotalHours
-    : capacity.workDaysPerPeriod * capacity.shiftsPerDay * capacity.hoursPerShift * capacity.numberOfWorkers;
+    : workDays * shifts * hoursPerShift * workers;
 
   // Capacidade Efetiva considerando OEE/eficiência
-  const effectiveCapacityHours = Number((grossHours * (capacity.efficiencyRate / 100)).toFixed(1));
+  const effectiveCapacityHours = Number((grossHours * (efficiency / 100)).toFixed(1));
 
   // Soma de horas das ordens ativas (Planejada e Em Produção)
   const activeOrders = productionOrders.filter(
@@ -151,12 +159,12 @@ export function calculateCapacityMetrics(
   );
 
   const plannedProductionHours = Number(
-    activeOrders.reduce((sum, op) => sum + (op.estimatedDurationHours || 0), 0).toFixed(1)
+    activeOrders.reduce((sum, op) => sum + (Number(op.estimatedDurationHours) || 0), 0).toFixed(1)
   );
 
   const completedOrders = productionOrders.filter(op => op.status === 'Concluída');
   const completedProductionHours = Number(
-    completedOrders.reduce((sum, op) => sum + (op.estimatedDurationHours || 0), 0).toFixed(1)
+    completedOrders.reduce((sum, op) => sum + (Number(op.estimatedDurationHours) || 0), 0).toFixed(1)
   );
 
   const remainingCapacityHours = Number(

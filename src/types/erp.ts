@@ -85,6 +85,7 @@ export type ProductionOrderStatus = 'Planejada' | 'Em Produção' | 'Concluída'
 
 export interface OpMaterialRequirement {
   materialId: string;
+  materialCode: string;
   materialName: string;
   unit: UnitOfMeasure;
   quantityPerUnit: number;

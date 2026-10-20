@@ -470,10 +470,10 @@ export const ProductsView: React.FC<ProductsViewProps> = ({
                     <input
                       type="number"
                       required
-                      min={1}
-                      step={1}
+                      min={0.1}
+                      step="any"
                       value={processTimeMinutes}
-                      onChange={e => setProcessTimeMinutes(Math.max(1, Number(e.target.value)))}
+                      onChange={e => setProcessTimeMinutes(Math.max(0.1, Number(e.target.value)))}
                       className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-slate-900 focus:outline-none font-mono"
                     />
                     <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400">

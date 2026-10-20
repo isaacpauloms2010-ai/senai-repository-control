@@ -235,6 +235,16 @@ export default function App() {
 
   // Direct Emission of Production Orders from Customer Order
   const handleGenerateProductionOrdersFromOrder = (order: CustomerOrder) => {
+    if (order.generatedOpIds && order.generatedOpIds.length > 0) {
+      const activeOps = appData.productionOrders.filter(op => order.generatedOpIds?.includes(op.id));
+      if (activeOps.length > 0) {
+        const confirmDuplicate = confirm(
+          `O pedido ${order.code} já possui ${activeOps.length} Ordem(ns) de Produção vinculada(s). Deseja emitir novas ordens adicionais?`
+        );
+        if (!confirmDuplicate) return;
+      }
+    }
+
     const productsMap = new Map(appData.products.map(p => [p.id, p]));
     const newGeneratedOps: ProductionOrder[] = [];
     const generatedOpIds: string[] = [];
@@ -309,8 +319,20 @@ export default function App() {
   };
 
   const handleDeleteProductionOrder = (orderId: string) => {
+    // If OP was linked to a customer order, clean up generatedOpIds
+    const updatedOrders = appData.customerOrders.map(order => {
+      if (order.generatedOpIds && order.generatedOpIds.includes(orderId)) {
+        return {
+          ...order,
+          generatedOpIds: order.generatedOpIds.filter(id => id !== orderId)
+        };
+      }
+      return order;
+    });
+
     setAppData(prev => ({
       ...prev,
+      customerOrders: updatedOrders,
       productionOrders: prev.productionOrders.filter(op => op.id !== orderId)
     }));
     showToast('Ordem de Produção excluída.', 'info');

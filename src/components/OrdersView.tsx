@@ -123,7 +123,18 @@ export const OrdersView: React.FC<OrdersViewProps> = ({
       setFormError('Informe a data prometida de entrega.');
       return;
     }
-    if (items.length === 0) {
+
+    let finalItems = [...items];
+    if (selectedProdId && itemQuantity > 0) {
+      const existingIndex = finalItems.findIndex(i => i.productId === selectedProdId);
+      if (existingIndex >= 0) {
+        finalItems[existingIndex].quantity += itemQuantity;
+      } else {
+        finalItems.push({ productId: selectedProdId, quantity: itemQuantity });
+      }
+    }
+
+    if (finalItems.length === 0) {
       setFormError('Adicione pelo menos 1 item ao pedido.');
       return;
     }
@@ -135,7 +146,7 @@ export const OrdersView: React.FC<OrdersViewProps> = ({
       orderDate,
       deliveryDate,
       status,
-      items,
+      items: finalItems,
       notes: notes.trim() || undefined,
       generatedOpIds: editingOrder ? editingOrder.generatedOpIds : undefined
     };
