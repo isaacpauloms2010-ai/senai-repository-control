@@ -1,0 +1,6 @@
+{
+  "name": "ManufacERP - PCP para Pequenas Indústrias",
+  "description": "Sistema enxuto de Planejamento e Controle de Produção (PCP) com Fichas Técnicas (BOM), Matérias-Primas, Pedidos, Ordens de Produção e Análise de Capacidade.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
